@@ -1,0 +1,15 @@
+opam-version: "2.0"
+maintainer: "Kai Klingenberg <kai.klingenberg@inria.cl>"
+authors: [ "Kai Klingenberg <kai.klingenberg@inria.cl>" ]
+homepage: "https://github.com/kklingenberg/echoes"
+bug-reports: "https://github.com/Inria-Chile/grace"
+synopsis: "GRAph-based Computation Engine"
+depends: [
+  "alcotest-lwt" {= "1.1.0"}
+  "calendar" {= "2.04"}
+  "dolog" {= "4.0.0"}
+  "dune" {= "2.6.1"}
+  "ocaml" {>= "4.10.0" & < "4.11.0"}
+  "reason" {= "3.6.0"}
+  "yaml" {= "2.1.0"}
+]

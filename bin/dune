@@ -1,0 +1,5 @@
+(executable
+ (public_name grace)
+ (name grace)
+ (libraries grace)
+ (flags (-ccopt -static -ccopt -no-pie)))
