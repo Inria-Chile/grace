@@ -17,6 +17,11 @@ let collect_options: unit => CLIOptionMap.t(string) =
           ),
           "Show settings and exit",
         ),
+        (
+          "--settings",
+          Arg.String(path => opts := CLIOptionMap.add("--settings", path, opts^)),
+          "Use the specified settings file",
+        ),
       ],
       _ => (),
       "Usage: grace [OPTION]...",
@@ -35,8 +40,14 @@ let main = () => {
         Grace.Version.sha1,
       ),
     );
-  } else if (CLIOptionMap.mem("--show-settings", opts)) {
-    print_endline("TODO print settings");
+  } else {
+    let settings =
+      Grace.Settings.initialize(CLIOptionMap.find_opt("--settings", opts));
+    if (CLIOptionMap.mem("--show-settings", opts)) {
+      print_endline(Grace.Settings.show(settings));
+    } else {
+      Grace.app(settings)#run();
+    };
   };
 };
 

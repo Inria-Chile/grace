@@ -1,19 +1,23 @@
 /* Type scaffolding */
+[@deriving show]
 type execution_mode =
   | Standalone
   | Coordinator
   | Worker;
 
+[@deriving show]
 type queue_connector =
-  | None
+  | Disabled
   | AMQP
   | Redis;
 
+[@deriving show]
 type amqp_consumer = {
   host: string,
   port: int,
   ssl: bool,
   username: string,
+  [@opaque]
   password: string,
   vhost: string,
   exchange: string,
@@ -21,100 +25,123 @@ type amqp_consumer = {
   topic: string,
 };
 
+[@deriving show]
 type redis_consumer = {
   host: string,
   port: int,
   ssl: bool,
   username: option(string),
+  [@opaque]
   password: option(string),
   channel: string,
 };
 
+[@deriving show]
 type consumer = {
   connector: queue_connector,
   amqp: amqp_consumer,
   redis: redis_consumer,
 };
 
+[@deriving show]
 type amqp_forwarder = {
   host: string,
   port: int,
   ssl: bool,
   username: string,
+  [@opaque]
   password: string,
   vhost: string,
   exchange: string,
   topic: string,
 };
 
+[@deriving show]
 type redis_forwarder = {
   host: string,
   port: int,
   ssl: bool,
   username: option(string),
+  [@opaque]
   password: option(string),
   channel: string,
 };
 
+[@deriving show]
 type forwarder = {
   connector: queue_connector,
   amqp: amqp_forwarder,
   redis: redis_forwarder,
 };
 
+[@deriving show]
 type graph_api = {
+  [@printer (fmt, a) => fprintf(fmt, "%s", Unix.string_of_inet_addr(a))]
   listen_address: Unix.inet_addr,
   listen_port: int,
   dot_command: string,
 };
 
+[@deriving show]
 type work_api = {
+  [@printer (fmt, a) => fprintf(fmt, "%s", Unix.string_of_inet_addr(a))]
   listen_address: Unix.inet_addr,
   listen_port: int,
 };
 
+[@deriving show]
 type db_connector =
   | SQLite
   | Postgres
   | ElasticSearch;
 
+[@deriving show]
 type graph_db_sqlite = {path: string};
 
+[@deriving show]
 type graph_db_postgres = {
   host: string,
   port: int,
   ssl: bool,
   username: string,
+  [@opaque]
   password: string,
   dbname: string,
 };
 
+[@deriving show]
 type graph_db = {
   connector: db_connector,
   sqlite: graph_db_sqlite,
   postgres: graph_db_postgres,
 };
 
+[@deriving show]
 type timeseries_db_sqlite = {path: string};
 
+[@deriving show]
 type timeseries_db_postgres = {
   host: string,
   port: int,
   ssl: bool,
   username: string,
+  [@opaque]
   password: string,
   dbname: string,
 };
 
+[@deriving show]
 type timeseries_db_elasticsearch = {
   host: string,
   port: int,
   ssl: bool,
   username: option(string),
+  [@opaque]
   password: option(string),
   template_prefix: string,
 };
 
+[@deriving show]
 type timeseries_db = {
   connector: db_connector,
   sqlite: timeseries_db_sqlite,
@@ -122,7 +149,9 @@ type timeseries_db = {
   elasticsearch: timeseries_db_elasticsearch,
 };
 
+[@deriving show]
 type t = {
+  [@printer (fmt, level) => fprintf(fmt, "%s", Dolog.Log.string_of_level(level))]
   log_level: Dolog.Log.log_level,
   execution_mode,
   consumer,
@@ -138,7 +167,7 @@ let defaults: t = {
   log_level: Dolog.Log.INFO,
   execution_mode: Standalone,
   consumer: {
-    connector: None,
+    connector: Disabled,
     amqp: {
       host: "localhost",
       port: 5672,
@@ -160,7 +189,7 @@ let defaults: t = {
     },
   },
   forwarder: {
-    connector: None,
+    connector: Disabled,
     amqp: {
       host: "localhost",
       port: 5672,
@@ -258,7 +287,7 @@ let initialize: option(string) => t =
       consumer: {
         connector:
           enum_p(
-            [("none", None), ("amqp", AMQP), ("redis", Redis)],
+            [("disabled", Disabled), ("amqp", AMQP), ("redis", Redis)],
             env_find("CONSUMER_CONNECTOR"),
             from_file("consumer.connector"),
             defaults.consumer.connector,
@@ -361,7 +390,7 @@ let initialize: option(string) => t =
       forwarder: {
         connector:
           enum_p(
-            [("none", None), ("amqp", AMQP), ("redis", Redis)],
+            [("disabled", Disabled), ("amqp", AMQP), ("redis", Redis)],
             env_find("FORWARDER_CONNECTOR"),
             from_file("forwarder.connector"),
             defaults.forwarder.connector,

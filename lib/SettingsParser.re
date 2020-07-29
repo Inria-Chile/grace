@@ -108,7 +108,17 @@ let string_p = (from_env, from_file, default) =>
 
 /* Parser for enumerated string */
 let enum_p = (options, from_env, from_file, default) => {
-  let find_key = key => List.assoc(key, options);
+  let find_key = key =>
+    try (List.assoc(key, options)) {
+    | Not_found =>
+      failwith(
+        Printf.sprintf(
+          "value %s is not a valid option; choices are {%s}",
+          key,
+          String.concat(", ", List.map(fst, options)),
+        ),
+      )
+    };
   Option.map(find_key, from_env)
   |? Option.map(find_key % string_of_value, from_file)
   |? Some(default)
