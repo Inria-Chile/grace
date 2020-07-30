@@ -1,0 +1,26 @@
+name: Build the base image and push it to the registry
+
+on:
+  push:
+    branches:
+      - build-test-ci
+  # push:
+  #   branches:
+  #     - master
+  #   paths:
+  #     - grace.opam
+  #     - docker/base.Dockerfile
+
+jobs:
+  build-base:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Define docker image
+        run: echo -n $(echo -n "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')/base:master > image
+      - name: Login
+        run: docker login docker.pkg.github.com -u kklingenberg -p "${{ secrets.GITHUB_TOKEN }}"
+      - name: Build
+        run: docker build -t docker.pkg.github.com/$(cat image) -f docker/base.Dockerfile .
+      - name: Push
+        run: docker push docker.pkg.github.com/$(cat image)

@@ -1,0 +1,16 @@
+name: Run tests
+
+on:
+  pull_request
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Define base docker image
+        run: echo -n $(echo -n "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')/base:master > base-image
+      - name: Login
+        run: docker login docker.pkg.github.com -u kklingenberg -p "${{ secrets.GITHUB_TOKEN }}"
+      - name: Test GRACE
+        run: ./runtests build --build-arg BASE=docker.pkg.github.com/$(cat base-image)

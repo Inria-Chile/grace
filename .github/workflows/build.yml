@@ -1,0 +1,55 @@
+name: Build GRACE images and push them to the registry
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - v*
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Define version
+        run: echo -n ${GITHUB_REF} | cut -d / -f 3 > version
+      - name: Define docker images prefix
+        run: echo -n $(echo -n "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]') > image-prefix
+      - name: Login
+        run: docker login docker.pkg.github.com -u kklingenberg -p "${{ secrets.GITHUB_TOKEN }}"
+      # Build the scratch image with only the grace executable
+      - name: Build main
+        run: docker build -t docker.pkg.github.com/$(cat image-prefix)/main:$(cat version)
+                          -f docker/main.Dockerfile
+                          --build-arg BASE=docker.pkg.github.com/$(cat image-prefix)/base:master
+                          --build-arg VERSION=$(cat version)
+                          --build-arg SHA1=${GITHUB_SHA}
+                          --build-arg BUILD=${GITHUB_RUN_ID}
+                          .
+      - name: Push main
+        run: docker push docker.pkg.github.com/$(cat image-prefix)/main:$(cat version)
+      # Embed the grace executable into an alpine image
+      - name: Build alpine
+        run: docker build -t docker.pkg.github.com/$(cat image-prefix)/alpine:$(cat version)
+                          -f docker/alpine.Dockerfile
+                          --build-arg MAIN=docker.pkg.github.com/$(cat image-prefix)/main:$(cat version)
+                          .
+      - name: Push alpine
+        run: docker push docker.pkg.github.com/$(cat image-prefix)/alpine:$(cat version)
+      # Embed the grace executable into a debian image
+      - name: Build debian
+        run: docker build -t docker.pkg.github.com/$(cat image-prefix)/debian:$(cat version)
+                          -f docker/debian.Dockerfile
+                          --build-arg MAIN=docker.pkg.github.com/$(cat image-prefix)/main:$(cat version)
+                          .
+      - name: Push debian
+        run: docker push docker.pkg.github.com/$(cat image-prefix)/debian:$(cat version)
+      # Embed the grace executable into a centos image
+      - name: Build centos
+        run: docker build -t docker.pkg.github.com/$(cat image-prefix)/centos:$(cat version)
+                          -f docker/centos.Dockerfile
+                          --build-arg MAIN=docker.pkg.github.com/$(cat image-prefix)/main:$(cat version)
+                          .
+      - name: Push centos
+        run: docker push docker.pkg.github.com/$(cat image-prefix)/centos:$(cat version)
