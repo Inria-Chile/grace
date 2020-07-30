@@ -3,13 +3,10 @@ name: Build the base image and push it to the registry
 on:
   push:
     branches:
-      - build-test-ci
-  # push:
-  #   branches:
-  #     - master
-  #   paths:
-  #     - grace.opam
-  #     - docker/base.Dockerfile
+      - master
+    paths:
+      - grace.opam
+      - docker/base.Dockerfile
 
 jobs:
   build-base:
