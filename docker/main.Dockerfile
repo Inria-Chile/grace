@@ -11,9 +11,7 @@ RUN sed -e "s/%%VERSION%%/${VERSION}/g" \
         -e "s/%%BUILD%%/${BUILD}/g" \
         -i lib/Version.re
 
-RUN eval $(opam env) && \
-    dune runtest && \
-    dune build bin/grace.exe
+RUN eval $(opam env) && dune build bin/grace.exe
 
 FROM scratch
 COPY --from=build /home/opam/app/_build/default/bin/grace.exe /bin/grace

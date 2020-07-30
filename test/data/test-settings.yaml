@@ -1,0 +1,34 @@
+logLevel: warn
+executionMode: coordinator
+
+# Queue consumer
+consumer:
+  connector: redis
+  redis:
+    host: redis
+
+# Queue forwarder
+forwarder:
+  connector: redis
+  redis:
+    host: redis
+
+# APIs
+graphAPI:
+  listenAddress: 0.0.0.0
+
+workAPI:
+  listenAddress: 0.0.0.0
+
+# Databases
+graphDB:
+  connector: postgres
+  postgres:
+    host: postgres
+
+timeseriesDB:
+  connector: elasticsearch
+  elasticsearch:
+    host: elasticsearch
+    username: grace
+    password: grace

@@ -1,17 +1,17 @@
 /* Type scaffolding */
-[@deriving show]
+[@deriving (show({with_path: false}), eq)]
 type execution_mode =
   | Standalone
   | Coordinator
   | Worker;
 
-[@deriving show]
+[@deriving (show({with_path: false}), eq)]
 type queue_connector =
   | Disabled
   | AMQP
   | Redis;
 
-[@deriving show]
+[@deriving (show({with_path: false}), eq)]
 type amqp_consumer = {
   host: string,
   port: int,
@@ -25,7 +25,7 @@ type amqp_consumer = {
   topic: string,
 };
 
-[@deriving show]
+[@deriving (show({with_path: false}), eq)]
 type redis_consumer = {
   host: string,
   port: int,
@@ -36,14 +36,14 @@ type redis_consumer = {
   channel: string,
 };
 
-[@deriving show]
+[@deriving (show({with_path: false}), eq)]
 type consumer = {
   connector: queue_connector,
   amqp: amqp_consumer,
   redis: redis_consumer,
 };
 
-[@deriving show]
+[@deriving (show({with_path: false}), eq)]
 type amqp_forwarder = {
   host: string,
   port: int,
@@ -56,7 +56,7 @@ type amqp_forwarder = {
   topic: string,
 };
 
-[@deriving show]
+[@deriving (show({with_path: false}), eq)]
 type redis_forwarder = {
   host: string,
   port: int,
@@ -67,38 +67,40 @@ type redis_forwarder = {
   channel: string,
 };
 
-[@deriving show]
+[@deriving (show({with_path: false}), eq)]
 type forwarder = {
   connector: queue_connector,
   amqp: amqp_forwarder,
   redis: redis_forwarder,
 };
 
-[@deriving show]
+[@deriving (show({with_path: false}), eq)]
 type graph_api = {
   [@printer (fmt, a) => fprintf(fmt, "%s", Unix.string_of_inet_addr(a))]
+  [@equal (a, b) => Unix.string_of_inet_addr(a) == Unix.string_of_inet_addr(b)]
   listen_address: Unix.inet_addr,
   listen_port: int,
   dot_command: string,
 };
 
-[@deriving show]
+[@deriving (show({with_path: false}), eq)]
 type work_api = {
   [@printer (fmt, a) => fprintf(fmt, "%s", Unix.string_of_inet_addr(a))]
+  [@equal (a, b) => Unix.string_of_inet_addr(a) == Unix.string_of_inet_addr(b)]
   listen_address: Unix.inet_addr,
   listen_port: int,
 };
 
-[@deriving show]
+[@deriving (show({with_path: false}), eq)]
 type db_connector =
   | SQLite
   | Postgres
   | ElasticSearch;
 
-[@deriving show]
+[@deriving (show({with_path: false}), eq)]
 type graph_db_sqlite = {path: string};
 
-[@deriving show]
+[@deriving (show({with_path: false}), eq)]
 type graph_db_postgres = {
   host: string,
   port: int,
@@ -109,17 +111,17 @@ type graph_db_postgres = {
   dbname: string,
 };
 
-[@deriving show]
+[@deriving (show({with_path: false}), eq)]
 type graph_db = {
   connector: db_connector,
   sqlite: graph_db_sqlite,
   postgres: graph_db_postgres,
 };
 
-[@deriving show]
+[@deriving (show({with_path: false}), eq)]
 type timeseries_db_sqlite = {path: string};
 
-[@deriving show]
+[@deriving (show({with_path: false}), eq)]
 type timeseries_db_postgres = {
   host: string,
   port: int,
@@ -130,7 +132,7 @@ type timeseries_db_postgres = {
   dbname: string,
 };
 
-[@deriving show]
+[@deriving (show({with_path: false}), eq)]
 type timeseries_db_elasticsearch = {
   host: string,
   port: int,
@@ -141,7 +143,7 @@ type timeseries_db_elasticsearch = {
   template_prefix: string,
 };
 
-[@deriving show]
+[@deriving (show({with_path: false}), eq)]
 type timeseries_db = {
   connector: db_connector,
   sqlite: timeseries_db_sqlite,
@@ -149,9 +151,10 @@ type timeseries_db = {
   elasticsearch: timeseries_db_elasticsearch,
 };
 
-[@deriving show]
+[@deriving (show({with_path: false}), eq)]
 type t = {
   [@printer (fmt, level) => fprintf(fmt, "%s", Dolog.Log.string_of_level(level))]
+  [@equal (a, b) => a === b]
   log_level: Dolog.Log.log_level,
   execution_mode,
   consumer,
