@@ -1,0 +1,16 @@
+# This is a docker-compose stack with the necesary environment
+# prepared for running GRACE tests. The provided runtest script
+# expects a recent installation of docker and docker-compose, executes
+# the grace service, and finally cleans up any auxiliary services.
+
+version: "3.8"
+
+services:
+  grace:
+    build:
+      context: ..
+      dockerfile: ./docker/base.Dockerfile
+    working_dir: /project
+    volumes:
+      - ..:/project
+    command: ["dune", "runtest", "-f"]

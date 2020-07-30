@@ -1,0 +1,11 @@
+#!/bin/sh
+
+set -e
+
+cleanup() {
+    docker-compose -f test/stack.yml down -v
+}
+trap cleanup EXIT
+
+docker-compose -f test/stack.yml build --pull
+docker-compose -f test/stack.yml run --rm grace
