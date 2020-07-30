@@ -1,3 +1,5 @@
 (test
- (name grace)
- (libraries grace alcotest))
+ (name TestGrace)
+ (libraries alcotest grace)
+ (deps (source_tree data))
+ (action (run %{test} -e --color=always)))

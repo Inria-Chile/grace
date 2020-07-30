@@ -13,15 +13,14 @@ let (|?): (option('a), option('a)) => option('a) =
  * Locate an environment variable, either by it pointing to a file or
  * if given the value directly.
  */
-let env_find = key => {
+let env_find = (env, key) => {
   let read_file = path => {
     let ch = open_in(path);
     let s = really_input_string(ch, in_channel_length(ch));
     close_in(ch);
     s;
   };
-  Option.map(read_file, Sys.getenv_opt(Printf.sprintf("%s_FILE", key)))
-  |? Sys.getenv_opt(key);
+  Option.map(read_file, env(Printf.sprintf("%s_FILE", key))) |? env(key);
 };
 
 /* Locate a nested key within a yaml value */
@@ -108,7 +107,17 @@ let string_p = (from_env, from_file, default) =>
 
 /* Parser for enumerated string */
 let enum_p = (options, from_env, from_file, default) => {
-  let find_key = key => List.assoc(key, options);
+  let find_key = key =>
+    try (List.assoc(key, options)) {
+    | Not_found =>
+      failwith(
+        Printf.sprintf(
+          "value %s is not a valid option; choices are {%s}",
+          key,
+          String.concat(", ", List.map(fst, options)),
+        ),
+      )
+    };
   Option.map(find_key, from_env)
   |? Option.map(find_key % string_of_value, from_file)
   |? Some(default)

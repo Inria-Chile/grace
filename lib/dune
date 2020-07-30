@@ -1,6 +1,9 @@
 (library
  (name grace)
- (libraries dolog
-            calendar
+ (libraries calendar
+            dolog
             yaml
-            yaml.unix))
+            yaml.unix
+            yojson
+            ppx_deriving_yojson.runtime)
+ (preprocess (pps ppx_deriving.show ppx_deriving.eq ppx_deriving_yojson)))
