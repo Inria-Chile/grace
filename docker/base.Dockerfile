@@ -1,4 +1,5 @@
-FROM ocaml/opam2:alpine AS build
+ARG BASE=ocaml/opam2:alpine
+FROM ${BASE} AS build
 
 RUN mkdir -p /home/opam/app
 WORKDIR /home/opam/app

@@ -42,7 +42,10 @@ let main = () => {
     );
   } else {
     let settings =
-      Grace.Settings.initialize(CLIOptionMap.find_opt("--settings", opts));
+      Grace.Settings.initialize(
+        Sys.getenv_opt,
+        CLIOptionMap.find_opt("--settings", opts),
+      );
     if (CLIOptionMap.mem("--show-settings", opts)) {
       print_endline(Grace.Settings.show(settings));
     } else {

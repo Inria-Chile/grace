@@ -4,7 +4,12 @@ let settings = Alcotest.testable(Settings.pp, Settings.equal);
 
 let test_barebones_initialize = () =>
   Alcotest.(
-    check(settings, "same settings", Settings.defaults, Settings.initialize(None))
+    check(
+      settings,
+      "same settings",
+      Settings.defaults,
+      Settings.initialize(_ => None, None),
+    )
   );
 
 let test_settings_from_file = () =>
@@ -58,7 +63,7 @@ let test_settings_from_file = () =>
           },
         },
       },
-      Settings.initialize(Some("data/test-settings.yaml")),
+      Settings.initialize(_ => None, Some("data/test-settings.yaml")),
     )
   );
 

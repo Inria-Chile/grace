@@ -1,0 +1,21 @@
+#!/bin/sh
+
+set -e
+
+echo "Waiting for required services"
+
+set "postgres:5432" \
+    "redis:6379"
+
+for service
+do
+    host=$(echo -n "$service" | cut -d ":" -f 1)
+    port=$(echo -n "$service" | cut -d ":" -f 2)
+    while ! nc -z "$host" "$port"
+    do
+        echo "Waiting for $service"
+        sleep 1
+    done
+done
+
+dune runtest -f

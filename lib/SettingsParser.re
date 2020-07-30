@@ -13,15 +13,14 @@ let (|?): (option('a), option('a)) => option('a) =
  * Locate an environment variable, either by it pointing to a file or
  * if given the value directly.
  */
-let env_find = key => {
+let env_find = (env, key) => {
   let read_file = path => {
     let ch = open_in(path);
     let s = really_input_string(ch, in_channel_length(ch));
     close_in(ch);
     s;
   };
-  Option.map(read_file, Sys.getenv_opt(Printf.sprintf("%s_FILE", key)))
-  |? Sys.getenv_opt(key);
+  Option.map(read_file, env(Printf.sprintf("%s_FILE", key))) |? env(key);
 };
 
 /* Locate a nested key within a yaml value */
