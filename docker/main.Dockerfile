@@ -2,6 +2,7 @@ ARG BASE
 FROM ${BASE} as build
 
 COPY --chown=opam:nogroup . .
+RUN eval $(opam env) && opam install --deps-only .
 
 ARG VERSION=local
 ARG SHA1=local
