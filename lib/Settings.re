@@ -259,12 +259,10 @@ let defaults: t = {
   },
 };
 
-/**
- * Initialize from combined sources in the following order of cascading attempts:
- * 1. environment variables
- * 2. configuration file, if given
- * 3. defaults
- */
+/** Initialize from combined sources in the following order of cascading attempts:
+    1. environment variables
+    2. configuration file, if given
+    3. defaults */
 let initialize: (string => option(string), option(string)) => t =
   (env, config_file_path) => {
     open SettingsParser;
