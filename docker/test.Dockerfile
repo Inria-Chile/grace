@@ -10,6 +10,9 @@ RUN sudo apk add --update --no-cache m4 graphviz && \
   eval $(opam env) && \
   opam update
 
-# Copy the whole directory for proper testing
-COPY --chown=opam:nogroup . .
+# Copy the package file initially
+COPY --chown=opam:nogroup grace.opam .
 RUN eval $(opam env) && opam install --deps-only .
+
+# Then copy the whole project for proper testing
+COPY --chown=opam:nogroup . .

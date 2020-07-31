@@ -9,7 +9,11 @@ trap cleanup EXIT
 
 if [ "$1" = "build" ]
 then
+    # build properly, ensuring the latest upstream updates
     shift
     docker-compose -f test/stack.yml build --pull "$@"
+else
+    # rebuild 'lightly' to only copy project files
+    docker-compose -f test/stack.yml build
 fi
 docker-compose -f test/stack.yml run --rm -T grace
