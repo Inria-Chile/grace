@@ -10,12 +10,9 @@ services:
   grace:
     build:
       context: ..
-      dockerfile: ./docker/base.Dockerfile
-    working_dir: /project
+      dockerfile: ./docker/test.Dockerfile
     env_file:
       - ./data/test.environment
-    volumes:
-      - ..:/project
     depends_on:
       - postgres
       - redis
