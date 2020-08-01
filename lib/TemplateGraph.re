@@ -101,12 +101,19 @@ module Node = {
   };
 
   [@deriving yojson]
+  type invocation =
+    | Lua(string)
+    | Command(string)
+    | Remote(string);
+
+  [@deriving yojson]
   type t = {
     cname: string,
     name: string,
     description: option(string),
     domain: DomainQuery.t,
     inputs: list(input),
+    invocation,
     meta: Yojson.Safe.t,
   };
 
@@ -119,7 +126,34 @@ module Node = {
       };
 };
 
+/** A [TemplateGraph.t] is a collection of nodes under a single
+    canonical name, which serves as a namespace for them. The
+    collection is consistent in that they form a directed acyclic
+    graph, and each node is well defined. */
 [@deriving yojson]
-type t = list(Node.t);
+type t = {
+  cname: string,
+  nodes: list(Node.t),
+};
 
-let validate: t => result(t, string) = _ => Error("not implemented");
+let to_dag: t => DAG.t =
+  graph =>
+    List.map(
+      (n: Node.t) => (n.cname, List.map((i: Node.input) => i.cname, n.inputs)),
+      graph.nodes,
+    );
+
+let validate: t => result(t, string) =
+  graph =>
+    switch (graph.nodes) {
+    | [] => Ok(graph)
+    | [n, ...ns] =>
+      switch (List.map(Node.validate, ns) |> List.fold_left(($&), Node.validate(n))) {
+      | Error(e) => Error(e)
+      | _ =>
+        switch (DAG.inconsistencies(to_dag(graph))) {
+        | Some(inconsistencies) => Error(inconsistencies)
+        | None => Ok(graph)
+        }
+      }
+    };
