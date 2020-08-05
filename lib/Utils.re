@@ -57,6 +57,7 @@ module DAG = {
           |> Seq.filter(((_, linked)) =>
                List.for_all(n => NodeSet.mem(n, consumed^), linked)
              )
+          |> Seq.filter(((n, _)) => !NodeSet.mem(n, consumed^))
           |> Seq.map(fst)
           |> NodeSet.of_seq;
         changed := !NodeSet.is_empty(slice);

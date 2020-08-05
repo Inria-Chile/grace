@@ -157,3 +157,13 @@ let validate: t => result(t, string) =
         }
       }
     };
+
+let dag_slices: t => list(list(Node.t)) =
+  graph =>
+    DAG.slices(to_dag(graph))
+    |> List.map(names =>
+         List.map(
+           name => List.find((node: Node.t) => node.cname == name, graph.nodes),
+           names,
+         )
+       );
