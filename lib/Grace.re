@@ -1,6 +1,7 @@
 module Log = Dolog.Log;
 module Settings = Settings;
 module TemplateGraph = TemplateGraph;
+module Utils = Utils;
 module Version = Version;
 
 type application = {

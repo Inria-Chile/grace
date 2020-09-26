@@ -37,6 +37,14 @@ let ($&): (result('a, string), result('a, string)) => result('a, string) =
     | (Error(ea), Error(eb)) => Error(ea ++ "; " ++ eb)
     };
 
+/* Read the contents of a file and return them as a string */
+let read_file = path => {
+  let ch = open_in(path);
+  let s = really_input_string(ch, in_channel_length(ch));
+  close_in(ch);
+  s;
+};
+
 /** Directed Acyclic Graph utilities */
 module DAG = {
   /** Alias for common topological graph structure */

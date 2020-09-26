@@ -14,6 +14,7 @@ module DomainQuery = {
   and query_expression =
     | And(list(query_expression))
     | Or(list(query_expression))
+    | Not(query_expression)
     | Filter(filter)
   and filter = {
     [@default None]
@@ -67,6 +68,12 @@ module DomainQuery = {
         | Error(e) => Error(e)
         | Ok(_) => Ok(expr)
         }
+      /* A NOT is valid if the expression being negated is valid */
+      | Not(q) =>
+        switch (validate_query_expression(q)) {
+        | Error(e) => Error(e)
+        | Ok(_) => Ok(expr)
+        }
       /* A concrete filter expression is checked by itself */
       | Filter(f) =>
         switch (validate_filter(f)) {
@@ -110,10 +117,12 @@ module Node = {
   type t = {
     cname: string,
     name: string,
+    [@default None]
     description: option(string),
     domain: DomainQuery.t,
     inputs: list(input),
     invocation,
+    [@default Yojson.Safe.(`Null)]
     meta: Yojson.Safe.t,
   };
 
