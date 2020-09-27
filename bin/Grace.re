@@ -12,9 +12,7 @@ let collect_options: unit => CLIOptionMap.t(string) =
         ),
         (
           "--show-settings",
-          Arg.Unit(
-            () => opts := CLIOptionMap.add("--show-settings", "requested", opts^),
-          ),
+          Arg.Unit(() => opts := CLIOptionMap.add("--show-settings", "requested", opts^)),
           "Show settings and exit",
         ),
         (
@@ -42,14 +40,12 @@ let main = () => {
     );
   } else {
     let settings =
-      Grace.Settings.initialize(
-        Sys.getenv_opt,
-        CLIOptionMap.find_opt("--settings", opts),
-      );
+      Grace.Settings.initialize(Sys.getenv_opt, CLIOptionMap.find_opt("--settings", opts));
     if (CLIOptionMap.mem("--show-settings", opts)) {
       print_endline(Grace.Settings.show(settings));
     } else {
-      Grace.app(settings)#run();
+      Grace.react_to_signals();
+      Lwt_main.run(Grace.app(settings)#run());
     };
   };
 };

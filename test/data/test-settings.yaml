@@ -13,11 +13,8 @@ forwarder:
   redis:
     host: redis
 
-# APIs
-graphAPI:
-  listenAddress: 0.0.0.0
-
-workAPI:
+# API
+API:
   listenAddress: 0.0.0.0
 
 # Databases
