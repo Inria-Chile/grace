@@ -58,7 +58,7 @@ let app: Settings.t => application =
         /* Start services */
         Log.info("Starting services");
         ApiToolkit.server(
-          (_, _) => Lwt.return(ApiToolkit.Response.ok(`String("Hello World!"))),
+          Api.handler,
           this#settings.api.listen_address,
           this#settings.api.listen_port,
         )

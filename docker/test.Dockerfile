@@ -18,3 +18,12 @@ RUN eval $(opam env) && opam install --deps-only .
 
 # Then copy the whole project for proper testing
 COPY --chown=opam:nogroup . .
+
+# By default, run the application
+ENV API_LISTEN_ADDRESS 0.0.0.0
+ENV LOG_LEVEL debug
+CMD [ \
+  "sh", \
+  "-c", \
+  "eval $(opam env) && dune build bin/grace.exe && _build/default/bin/grace.exe" \
+]

@@ -41,10 +41,21 @@ module Response = {
     let make_error = status => {
       let error = `String(Status.default_reason_phrase(status));
       let code = `Int(Status.to_code((status :> Status.t)));
-      (~details=`Null, ()) =>
+      (~kind="Unknown", ~details=None, ()) =>
         of_yojson(
           ~status,
-          `Assoc([("error", error), ("code", code), ("details", details)]),
+          `Assoc([
+            ("error", error),
+            ("code", code),
+            ("kind", `String(kind)),
+            (
+              "details",
+              switch (details) {
+              | Some(d) => `String(d)
+              | None => `Null
+              },
+            ),
+          ]),
         );
     };
 
@@ -56,6 +67,42 @@ module Response = {
     let internal_server_error = make_error(`Internal_server_error);
     let bad_gateway = make_error(`Bad_gateway);
   };
+};
+
+/* Simple wrapper for requests */
+module Request = {
+  /* A request is a thin wrapper over Httpaf.Reqd.t */
+  type t = Reqd.t;
+
+  /* A couple of request handling-related exceptions */
+  exception ImproperlyEncodedBody;
+  exception MissingParameter(string);
+  exception InvalidParameter(string, string);
+  exception MissingCredentials;
+  exception InvalidCredentials;
+
+  /* Extract the JSON-encoded body of the request */
+  let body: t => Lwt.t(Yojson.Safe.t) =
+    reqd => {
+      let (promise, resolver) = Lwt.wait();
+      let request_body = Reqd.request_body(reqd);
+      let chunks = ref([]);
+      let rec on_read = (buffer, ~off, ~len) => {
+        chunks := [Bigstringaf.substring(buffer, ~off, ~len), ...chunks^];
+        Body.schedule_read(request_body, ~on_read, ~on_eof);
+      }
+      and on_eof = () =>
+        Lwt.wakeup_later(resolver, chunks^ |> List.rev |> String.concat(""));
+      Body.schedule_read(request_body, ~on_read, ~on_eof);
+      promise
+      >>= (
+        raw =>
+          switch (Yojson.Safe.from_string(raw)) {
+          | value => Lwt.return(value)
+          | exception _ => Lwt.fail(ImproperlyEncodedBody)
+          }
+      );
+    };
 };
 
 let path_syntax =
@@ -71,18 +118,39 @@ let make_request_handler = (handler, _, reqd) => {
     Neturl.string_of_url(url),
   );
   /* Normalize the path to avoid mismatching */
-  let path = Neturl.url_path(url) |> Neturl.norm_path;
+  let path = Neturl.url_path(url) |> Neturl.norm_path |> List.tl;
   /* Invoke the handler, and deal with the response or errors
      produced. */
   Lwt.async(() =>
     Lwt.catch(
-      () => handler(Reqd.request(reqd).meth, path),
+      () => handler(Reqd.request(reqd).meth, path, reqd),
       ex =>
         Lwt.return(
-          Response.Error.internal_server_error(
-            ~details=`String(Printexc.to_string(ex)),
-            (),
-          ),
+          switch (ex) {
+          | Request.ImproperlyEncodedBody =>
+            Response.Error.bad_request(~kind="ImproperlyEncodedBody", ())
+          | Request.MissingParameter(p) =>
+            Response.Error.bad_request(
+              ~kind="MissingParameter",
+              ~details=Some(Printf.sprintf("Parameter %s is missing", p)),
+              (),
+            )
+          | Request.InvalidParameter(p, cause) =>
+            Response.Error.bad_request(
+              ~kind="InvalidParameter",
+              ~details=Some(Printf.sprintf("Paramter %s is invalid: %s", p, cause)),
+              (),
+            )
+          | Request.MissingCredentials =>
+            Response.Error.unauthorized(~kind="MissingCredentials", ())
+          | Request.InvalidCredentials =>
+            Response.Error.unauthorized(~kind="InvalidCredentials", ())
+          | _ =>
+            Response.Error.internal_server_error(
+              ~details=Some(Printexc.to_string(ex)),
+              (),
+            )
+          },
         ),
     )
     >|= (
@@ -101,7 +169,7 @@ let error_handler = (_, ~request as _=?, error, start_response) => {
   let error_response =
     switch (error) {
     | `Exn(ex) =>
-      Response.Error.internal_server_error(~details=`String(Printexc.to_string(ex)), ())
+      Response.Error.internal_server_error(~details=Some(Printexc.to_string(ex)), ())
     | `Bad_request => Response.Error.bad_request()
     | `Bad_gateway => Response.Error.bad_gateway()
     | `Internal_server_error => Response.Error.internal_server_error()

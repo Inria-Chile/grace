@@ -13,4 +13,4 @@ jobs:
       - name: Login
         run: docker login docker.pkg.github.com -u kklingenberg -p "${{ secrets.GITHUB_TOKEN }}"
       - name: Test GRACE
-        run: ./runtests build --build-arg BASE=docker.pkg.github.com/$(cat base-image)
+        run: ./run test build --build-arg BASE=docker.pkg.github.com/$(cat base-image)
