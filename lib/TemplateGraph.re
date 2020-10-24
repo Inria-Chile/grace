@@ -176,3 +176,45 @@ let dag_slices: t => list(list(Node.t)) =
            names,
          )
        );
+
+module Service = {
+  open ApiToolkit;
+
+  let invalid_template_graph = (cname, error) =>
+    raise(
+      Request.InvalidParameter(
+        cname,
+        Printf.sprintf("improperly encoded template graph: %s", error),
+      ),
+    );
+
+  let validate: (string, Yojson.Safe.t) => Yojson.Safe.t =
+    (cname, body) =>
+      switch (Result.bind(of_yojson(body), validate)) {
+      | Ok(template_graph) => to_yojson(template_graph)
+      | Error(e) => invalid_template_graph(cname, e)
+      };
+
+  let dag_slices: (string, Yojson.Safe.t) => Yojson.Safe.t =
+    (cname, body) =>
+      switch (of_yojson(body)) {
+      | Ok(template_graph) =>
+        dag_slices(template_graph)
+        |> List.map(slice => `List(List.map(Node.to_yojson, slice)))
+        |> (slices => `List(slices))
+      | Error(e) => invalid_template_graph(cname, e)
+      };
+};
+
+module Controller = {
+  open ApiToolkit;
+  open Lwt.Infix;
+
+  /* Decode-encode a given template graph */
+  let echo: Request.t => Lwt.t(Response.t) =
+    req => Request.body(req) >|= Service.validate("_echo") >|= Response.ok;
+
+  /* Extract DAG slices given a template graph */
+  let echo_dag_slices: Request.t => Lwt.t(Response.t) =
+    req => Request.body(req) >|= Service.dag_slices("_echo") >|= Response.ok;
+};

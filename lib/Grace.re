@@ -58,7 +58,7 @@ let app: Settings.t => application =
         /* Start services */
         Log.info("Starting services");
         ApiToolkit.server(
-          Api.handler,
+          ApiRoutes.handler(this#settings),
           this#settings.api.listen_address,
           this#settings.api.listen_port,
         )

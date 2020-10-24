@@ -80,6 +80,7 @@ module Request = {
   exception InvalidParameter(string, string);
   exception MissingCredentials;
   exception InvalidCredentials;
+  exception NotImplemented;
 
   /* Extract the JSON-encoded body of the request */
   let body: t => Lwt.t(Yojson.Safe.t) =
@@ -145,6 +146,8 @@ let make_request_handler = (handler, _, reqd) => {
             Response.Error.unauthorized(~kind="MissingCredentials", ())
           | Request.InvalidCredentials =>
             Response.Error.unauthorized(~kind="InvalidCredentials", ())
+          | Request.NotImplemented =>
+            Response.Error.internal_server_error(~kind="NotImplemented", ())
           | _ =>
             Response.Error.internal_server_error(
               ~details=Some(Printexc.to_string(ex)),
