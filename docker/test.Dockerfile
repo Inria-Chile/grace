@@ -6,8 +6,9 @@ RUN mkdir -p /home/opam/app
 WORKDIR /home/opam/app
 
 # Install opam requirements alongside GRACE's 'optional' requirements
+COPY apk-packages .
 RUN set -eux; \
-    sudo apk add --update --no-cache m4 graphviz; \
+    sudo apk add --update --no-cache $(cat apk-packages) graphviz; \
     opam switch 4.10; \
     eval $(opam env); \
     opam update

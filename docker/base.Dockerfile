@@ -5,8 +5,9 @@ FROM ${BASE} AS build
 RUN mkdir -p /home/opam/app
 WORKDIR /home/opam/app
 
+COPY apk-packages .
 RUN set -eux; \
-    sudo apk add --update --no-cache m4; \
+    sudo apk add --update --no-cache $(cat apk-packages); \
     opam switch 4.10; \
     eval $(opam env); \
     opam update

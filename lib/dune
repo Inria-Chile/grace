@@ -1,6 +1,10 @@
 (library
  (name grace)
  (libraries calendar
+            caqti
+            caqti-lwt
+            caqti-driver-postgresql
+            caqti-driver-sqlite3
             dolog
             httpaf-lwt-unix
             threads

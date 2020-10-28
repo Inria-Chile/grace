@@ -50,7 +50,7 @@ let test_settings_from_file = () =>
         },
         timeseries_db: {
           ...Settings.defaults.timeseries_db,
-          connector: Settings.ElasticSearch,
+          connector: Settings.Elasticsearch,
           elasticsearch: {
             ...Settings.defaults.timeseries_db.elasticsearch,
             host: "elasticsearch",

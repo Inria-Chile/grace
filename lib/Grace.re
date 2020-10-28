@@ -1,5 +1,6 @@
 open Lwt.Infix;
 module Log = Dolog.Log;
+module Persistence = Persistence;
 module Settings = Settings;
 module TemplateGraph = TemplateGraph;
 module Utils = Utils;

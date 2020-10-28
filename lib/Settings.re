@@ -87,7 +87,7 @@ type api = {
 type db_connector =
   | SQLite
   | Postgres
-  | ElasticSearch;
+  | Elasticsearch;
 
 [@deriving (show({with_path: false}), eq)]
 type graph_db_sqlite = {path: string};
@@ -550,7 +550,7 @@ let initialize: (string => option(string), option(string)) => t =
             [
               ("sqlite", SQLite),
               ("postgres", Postgres),
-              ("elasticsearch", ElasticSearch),
+              ("elasticsearch", Elasticsearch),
             ],
             from_env("TIMESERIES_DB_CONNECTOR"),
             from_file("timeseriesDB.connector"),
