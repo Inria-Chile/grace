@@ -1,27 +1,9 @@
-/* Function composition */
-let (%): ('b => 'c, 'a => 'b, 'a) => 'c = (f, g, x) => f(g(x));
+open Utils;
 
-/* OR for option values */
-let (|?): (option('a), option('a)) => option('a) =
-  (oa, ob) =>
-    switch (oa, ob) {
-    | (None, b) => b
-    | (a, _) => a
-    };
-
-/**
- * Locate an environment variable, either by it pointing to a file or
- * if given the value directly.
- */
-let env_find = (env, key) => {
-  let read_file = path => {
-    let ch = open_in(path);
-    let s = really_input_string(ch, in_channel_length(ch));
-    close_in(ch);
-    s;
-  };
+/** Locate an environment variable, either by it pointing to a file or
+    if given the value directly. */
+let env_find = (env, key) =>
   Option.map(read_file, env(Printf.sprintf("%s_FILE", key))) |? env(key);
-};
 
 /* Locate a nested key within a yaml value */
 let rec yaml_find = (value, path) => {

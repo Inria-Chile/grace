@@ -36,12 +36,8 @@ let test_settings_from_file = () =>
             host: "redis",
           },
         },
-        graph_api: {
-          ...Settings.defaults.graph_api,
-          listen_address: Unix.inet_addr_of_string("0.0.0.0"),
-        },
-        work_api: {
-          ...Settings.defaults.work_api,
+        api: {
+          ...Settings.defaults.api,
           listen_address: Unix.inet_addr_of_string("0.0.0.0"),
         },
         graph_db: {

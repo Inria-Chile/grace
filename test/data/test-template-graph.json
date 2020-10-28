@@ -1,0 +1,48 @@
+{
+  "cname": "test-graph",
+  "nodes": [
+    {
+      "cname": "test-node-a",
+      "name": "Test Node A",
+      "domain": {"entity": "house"},
+      "inputs": [
+        {
+          "cname": "test-node-b",
+          "relation": ["Bijection"]
+        },
+        {
+          "cname": "test-node-c",
+          "relation": ["Backward", "inhabits"]
+        }
+      ],
+      "invocation": ["Remote", "http://localhost:12345/test-node-a"],
+      "meta": {
+        "something": "arbitrary"
+      }
+    },
+    {
+      "cname": "test-node-b",
+      "name": "Test Node B",
+      "description": "The very best node B",
+      "domain": {
+        "entity": "house",
+        "which": ["Filter", {"attrEq": ["size", "big"]}]
+      },
+      "inputs": [
+        {
+          "cname": "test-node-c",
+          "relation": ["Backward", "inhabits"]
+        }
+      ],
+      "invocation": ["Remote", "http://localhost:12345/test-node-b"]
+    },
+    {
+      "cname": "test-node-c",
+      "name": "Test Node C",
+      "description": "The very bestest node C",
+      "domain": {"entity": "person"},
+      "inputs": [],
+      "invocation": ["Remote", "http://localhost:12345/test-node-c"]
+    }
+  ]
+}

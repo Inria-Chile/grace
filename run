@@ -1,0 +1,26 @@
+#!/bin/sh
+
+set -e
+
+cleanup() {
+    docker-compose -f test/stack.yml down -v
+}
+trap cleanup EXIT
+
+command=
+if [ "$1" = "test" ]
+then
+    shift
+    command="test/waitandtest"
+fi
+
+if [ "$1" = "build" ]
+then
+    # build properly, ensuring the latest upstream updates
+    shift
+    docker-compose -f test/stack.yml build --pull "$@"
+else
+    # rebuild 'lightly' to only copy project files
+    docker-compose -f test/stack.yml build
+fi
+docker-compose -f test/stack.yml run --rm -T -p 8000:8000 grace ${command}

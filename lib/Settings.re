@@ -75,20 +75,12 @@ type forwarder = {
 };
 
 [@deriving (show({with_path: false}), eq)]
-type graph_api = {
+type api = {
   [@printer (fmt, a) => fprintf(fmt, "%s", Unix.string_of_inet_addr(a))]
   [@equal (a, b) => Unix.string_of_inet_addr(a) == Unix.string_of_inet_addr(b)]
   listen_address: Unix.inet_addr,
   listen_port: int,
   dot_command: string,
-};
-
-[@deriving (show({with_path: false}), eq)]
-type work_api = {
-  [@printer (fmt, a) => fprintf(fmt, "%s", Unix.string_of_inet_addr(a))]
-  [@equal (a, b) => Unix.string_of_inet_addr(a) == Unix.string_of_inet_addr(b)]
-  listen_address: Unix.inet_addr,
-  listen_port: int,
 };
 
 [@deriving (show({with_path: false}), eq)]
@@ -159,8 +151,7 @@ type t = {
   execution_mode,
   consumer,
   forwarder,
-  graph_api,
-  work_api,
+  api,
   graph_db,
   timeseries_db,
 };
@@ -212,14 +203,10 @@ let defaults: t = {
       channel: "data.digest",
     },
   },
-  graph_api: {
+  api: {
     listen_address: Unix.inet_addr_of_string("127.0.0.1"),
     listen_port: 8000,
     dot_command: "/usr/bin/env dot",
-  },
-  work_api: {
-    listen_address: Unix.inet_addr_of_string("127.0.0.1"),
-    listen_port: 8001,
   },
   graph_db: {
     connector: SQLite,
@@ -259,12 +246,10 @@ let defaults: t = {
   },
 };
 
-/**
- * Initialize from combined sources in the following order of cascading attempts:
- * 1. environment variables
- * 2. configuration file, if given
- * 3. defaults
- */
+/** Initialize from combined sources in the following order of cascading attempts:
+    1. environment variables
+    2. configuration file, if given
+    3. defaults */
 let initialize: (string => option(string), option(string)) => t =
   (env, config_file_path) => {
     open SettingsParser;
@@ -279,11 +264,7 @@ let initialize: (string => option(string), option(string)) => t =
         log_level_p(from_env("LOG_LEVEL"), from_file("logLevel"), defaults.log_level),
       execution_mode:
         enum_p(
-          [
-            ("standalone", Standalone),
-            ("coordinator", Coordinator),
-            ("worker", Worker),
-          ],
+          [("standalone", Standalone), ("coordinator", Coordinator), ("worker", Worker)],
           from_env("EXECUTION_MODE"),
           from_file("executionMode"),
           defaults.execution_mode,
@@ -488,38 +469,24 @@ let initialize: (string => option(string), option(string)) => t =
             ),
         },
       },
-      graph_api: {
+      api: {
         listen_address:
           unix_address_p(
-            from_env("GRAPH_API_LISTEN_ADDRESS"),
-            from_file("graphAPI.listenAddress"),
-            defaults.graph_api.listen_address,
+            from_env("API_LISTEN_ADDRESS"),
+            from_file("API.listenAddress"),
+            defaults.api.listen_address,
           ),
         listen_port:
           unix_port_p(
-            from_env("GRAPH_API_LISTEN_PORT"),
-            from_file("graphAPI.listenPort"),
-            defaults.graph_api.listen_port,
+            from_env("API_LISTEN_PORT"),
+            from_file("API.listenPort"),
+            defaults.api.listen_port,
           ),
         dot_command:
           non_empty_string_p(
-            from_env("GRAPH_API_DOT_COMMAND"),
-            from_file("graphAPI.dotCommand"),
-            defaults.graph_api.dot_command,
-          ),
-      },
-      work_api: {
-        listen_address:
-          unix_address_p(
-            from_env("WORK_API_LISTEN_ADDRESS"),
-            from_file("workAPI.listenAddress"),
-            defaults.work_api.listen_address,
-          ),
-        listen_port:
-          unix_port_p(
-            from_env("WORK_API_LISTEN_PORT"),
-            from_file("workAPI.listenPort"),
-            defaults.work_api.listen_port,
+            from_env("API_DOT_COMMAND"),
+            from_file("API.dotCommand"),
+            defaults.api.dot_command,
           ),
       },
       graph_db: {
